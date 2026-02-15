@@ -5,118 +5,56 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Media Requests</title>
     <style>
-        /* --- ELEGANTFIN DESIGN SYSTEM --- */
         :root {
             --bg: #050505;
             --accent: #00A4DC;
             --card-bg: rgba(255, 255, 255, 0.05);
-            --glass: rgba(15, 15, 15, 0.7);
-            --blur: saturate(180%) blur(20px);
+            --glass: rgba(15, 15, 15, 0.8);
             --text: #efefef;
             --text-dim: #b0b0b0;
         }
 
         body {
-            margin: 0;
-            background: var(--bg);
-            color: var(--text);
-            font-family: 'Inter', -apple-system, sans-serif;
-            -webkit-font-smoothing: antialiased;
+            margin: 0; background: var(--bg); color: var(--text);
+            font-family: 'Inter', sans-serif;
             background-image: radial-gradient(circle at 50% -20%, #1a2a3a 0%, transparent 50%);
             min-height: 100vh;
         }
 
-        /* Navbar / Search Area */
         header {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background: var(--glass);
-            backdrop-filter: var(--blur);
-            -webkit-backdrop-filter: var(--blur);
-            padding: 20px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            position: sticky; top: 0; z-index: 100;
+            background: var(--glass); backdrop-filter: blur(20px);
+            padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1);
         }
 
-        .search-container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
+        .search-container { max-width: 800px; margin: 0 auto; }
         input {
-            width: 100%;
-            padding: 14px 24px;
-            border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.1);
-            background: rgba(0,0,0,0.3);
-            color: white;
-            font-size: 16px;
-            outline: none;
-            transition: 0.3s;
+            width: 100%; padding: 14px; border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3);
+            color: white; font-size: 16px; outline: none;
         }
 
-        input:focus { border-color: var(--accent); box-shadow: 0 0 20px rgba(0, 164, 220, 0.2); }
+        main { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 24px; }
 
-        /* Content Layout */
-        main { max-width: 1400px; margin: 40px auto; padding: 0 20px; }
-        
-        h2 { font-weight: 500; font-size: 1.2rem; color: var(--text-dim); margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; }
-
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-            gap: 24px;
-            margin-bottom: 50px;
-        }
-
-        /* Movie/Show Cards */
         .card {
-            background: var(--card-bg);
-            border-radius: 12px;
-            overflow: hidden;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid rgba(255,255,255,0.05);
-            position: relative;
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.05); transition: 0.3s;
         }
-
-        .card:hover {
-            transform: scale(1.04);
-            border-color: var(--accent);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-
-        .poster-wrapper { position: relative; aspect-ratio: 2/3; }
+        .card:hover { transform: scale(1.04); border-color: var(--accent); }
+        .poster-wrapper { aspect-ratio: 2/3; background: #111; }
         .card img { width: 100%; height: 100%; object-fit: cover; }
 
         .card-info { padding: 12px; }
         .card-title { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-        .card-meta { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
 
-        /* Request Button Overlay */
-        .request-btn {
-            background: var(--accent);
-            color: white;
-            border: none;
-            width: 100%;
-            padding: 8px 0;
-            border-radius: 6px;
-            margin-top: 10px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: 0.2s;
+        .request-link {
+            display: block; background: var(--accent); color: white;
+            text-align: center; padding: 10px; margin-top: 10px;
+            border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 13px;
         }
-        .request-btn:hover { background: #008ebf; }
-
-        /* Toast Popup */
-        #toast {
-            visibility: hidden; min-width: 250px; background: var(--accent); color: white;
-            text-align: center; border-radius: 8px; padding: 16px; position: fixed;
-            z-index: 200; bottom: 30px; left: 50%; transform: translateX(-50%);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-        #toast.show { visibility: visible; animation: fadein 0.5s, fadeout 0.5s 2.5s; }
-        @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
-        @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+        
+        .request-link:active { background: #ffffff; color: var(--accent); }
     </style>
 </head>
 <body>
@@ -128,19 +66,14 @@
     </header>
 
     <main>
-        <div id="browse-sections">
-            <h2 id="section-title">Trending Now</h2>
-            <div id="results" class="grid"></div>
-        </div>
+        <h2 id="section-title" style="font-weight: 300; color: var(--text-dim);">Trending Now</h2>
+        <div id="results" class="grid"></div>
     </main>
-
-    <div id="toast">📋 Copied to clipboard! Opening form...</div>
 
     <script>
         const API_KEY = '63609170f4ab20e86842abce07c61ad6';
         const FORM_LINK = 'https://forms.gle/1XULurfHDPjeLdZ89';
 
-        // Load Trending on Startup
         window.onload = () => fetchTrending();
 
         async function fetchTrending() {
@@ -153,17 +86,10 @@
         function handleSearch() {
             const query = document.getElementById('search').value;
             clearTimeout(searchTimeout);
-            
-            if (query.length === 0) {
-                document.getElementById('section-title').innerText = "Trending Now";
-                fetchTrending();
-                return;
-            }
-
+            if (!query) { fetchTrending(); return; }
             searchTimeout = setTimeout(async () => {
                 const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&query=${query}`);
                 const data = await res.json();
-                document.getElementById('section-title').innerText = "Search Results";
                 renderResults(data.results);
             }, 500);
         }
@@ -171,42 +97,34 @@
         function renderResults(items) {
             const resultsDiv = document.getElementById('results');
             resultsDiv.innerHTML = '';
-
             items.forEach(item => {
                 if (item.media_type === 'person') return;
-
                 const title = item.title || item.name;
                 const date = item.release_date || item.first_air_date || '';
                 const year = date ? date.split('-')[0] : 'N/A';
                 const poster = item.poster_path ? `https://image.tmdb.org/t/p/w400${item.poster_path}` : 'https://via.placeholder.com/400x600?text=No+Poster';
-                const type = item.media_type === 'tv' ? 'Series' : 'Movie';
-
+                
                 const card = document.createElement('div');
                 card.className = 'card';
                 card.innerHTML = `
                     <div class="poster-wrapper"><img src="${poster}"></div>
                     <div class="card-info">
                         <div class="card-title">${title}</div>
-                        <div class="card-meta">${year} • ${type}</div>
-                        <button class="request-btn" onclick="request('${title}', '${year}', '${item.media_type}', '${item.id}')">REQUEST</button>
+                        <div style="font-size:11px; color:gray;">${year} • ${item.media_type.toUpperCase()}</div>
+                        <a href="${FORM_LINK}" target="_blank" class="request-link" 
+                           onclick="copyData('${title}', '${year}', '${item.media_type}', '${item.id}')">
+                           COPY & REQUEST
+                        </a>
                     </div>
                 `;
                 resultsDiv.appendChild(card);
             });
         }
 
-        function request(title, year, type, id) {
-            const tmdbUrl = `https://www.themoviedb.org/${type}/${id}`;
-            const clipboardText = `Request: ${title} (${year})\nLink: ${tmdbUrl}`;
-            
-            navigator.clipboard.writeText(clipboardText).then(() => {
-                const toast = document.getElementById('toast');
-                toast.className = "show";
-                setTimeout(() => { 
-                    toast.className = ""; 
-                    window.open(FORM_LINK, '_blank');
-                }, 2000);
-            });
+        function copyData(title, year, type, id) {
+            const text = `Title: ${title} (${year})\nID: ${id}\nType: ${type}`;
+            navigator.clipboard.writeText(text);
+            alert("Copied movie details! Now just paste them into the form that opened.");
         }
     </script>
 </body>
