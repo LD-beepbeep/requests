@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Movie/Series Requests</title>
+    <style>
+        body { font-family: sans-serif; background: #101010; color: white; text-align: center; padding: 20px; }
+        input { padding: 15px; width: 60%; font-size: 18px; border-radius: 30px; border: none; outline: none; text-align: center; }
+        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 20px; max-width: 1000px; margin: 30px auto; }
+        .card { background: #1f1f1f; border-radius: 10px; overflow: hidden; cursor: pointer; transition: 0.2s; }
+        .card:hover { transform: scale(1.05); border: 2px solid #00A4DC; }
+        .card img { width: 100%; height: 225px; object-fit: cover; }
+        .card p { padding: 10px; margin: 0; font-size: 14px; }
+        .btn { background: #00A4DC; color: white; padding: 10px; display: block; text-decoration: none; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <h1>Request a Movie</h1>
+    <input type="text" id="search" placeholder="Type a movie name..." onkeyup="search()">
+    <div class="grid" id="results"></div>
+
+    <script>
+        // --- CONFIGURATION ---
+        const API_KEY = 'PASTE_YOUR_TMDB_KEY_HERE'; 
+        const FORM_LINK = 'PASTE_YOUR_GOOGLE_FORM_LINK_HERE';
+        // ---------------------
+
+        async function search() {
+            const query = document.getElementById('search').value;
+            if (query.length < 3) return; // Don't search until 3 letters are typed
+            
+            const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&query=${query}`);
+            const data = await res.json();
+            
+            let html = '';
+            data.results.forEach(movie => {
+                if (movie.media_type === 'person') return; // Skip actors
+                
+                const title = movie.title || movie.name;
+                const img = movie.poster_path ? 'https://image.tmdb.org/t/p/w200' + movie.poster_path : 'https://via.placeholder.com/200x300';
+                
+                // This creates a link to your Google Form but fills in the Movie Name automatically!
+                // Note: The user might have to click "Paste" or type it if auto-fill is tricky, but this link opens the form.
+                const formUrl = FORM_LINK;
+
+                html += `
+                <div class="card">
+                    <img src="${img}">
+                    <p><b>${title}</b></p>
+                    <a href="${formUrl}" target="_blank" class="btn">REQUEST THIS</a>
+                </div>`;
+            });
+            document.getElementById('results').innerHTML = html;
+        }
+    </script>
+</body>
+</ht
+  ml>
