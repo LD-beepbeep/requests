@@ -6,136 +6,94 @@
     <title>Requests</title>
     <style>
         :root {
-            --bg: #101c2b; /* Matches your screenshot's dark blue */
-            --accent: #e0e0e0; /* Matches the "Requests" button color */
-            --accent-text: #000;
-            --card-bg: rgba(255, 255, 255, 0.05);
-            --text: #fff;
+            --bg: #101625; /* Your exact hex color */
+            --card-bg: rgba(255, 255, 255, 0.04);
+            --jelly-pill: #d8dee6; /* Light grey from your screenshot */
+            --text: #ffffff;
+            --accent: #00A4DC;
         }
 
         body { 
-            margin: 0; 
-            background: var(--bg); 
-            color: var(--text); 
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            padding-bottom: 50px;
+            margin: 0; background: var(--bg); color: var(--text); 
+            font-family: "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased;
         }
 
-        /* Matches the search look in your screenshot */
-        .header-search {
-            position: sticky; 
-            top: 0; 
-            background: var(--bg); 
-            padding: 15px; 
-            z-index: 100;
-            display: flex;
-            justify-content: center;
+        header {
+            position: sticky; top: 0; z-index: 100; background: var(--bg);
+            padding: 15px; border-bottom: 1px solid rgba(255,255,255,0.05);
         }
 
         input {
-            width: 90%;
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            padding: 12px 20px;
-            border-radius: 10px;
-            color: white;
-            font-size: 16px;
-            outline: none;
+            width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.1); padding: 12px 20px;
+            border-radius: 12px; color: white; font-size: 16px; outline: none;
+            transition: 0.3s;
         }
+        input:focus { border-color: var(--accent); background: rgba(0,0,0,0.5); }
 
-        /* Movie Grid - Matches Jellyfin spacing */
         .grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr); /* 2 columns for mobile like your "My Media" */
-            gap: 12px;
-            padding: 12px;
+            display: grid; grid-template-columns: repeat(2, 1fr); /* 2 columns like My Media */
+            gap: 15px; padding: 15px;
         }
 
         .card {
-            background: var(--card-bg);
-            border-radius: 10px;
-            overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.05);
+            background: var(--card-bg); border-radius: 12px; overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.05); transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+        }
+        .card:active { transform: scale(0.95); } /* Fun click interaction */
+
+        .badge {
+            position: absolute; top: 8px; right: 8px; background: rgba(0,0,0,0.6);
+            padding: 2px 8px; border-radius: 4px; font-size: 10px; font-weight: bold; text-transform: uppercase;
         }
 
-        .card img {
-            width: 100%;
-            aspect-ratio: 2/3;
-            object-fit: cover;
-            display: block;
-        }
+        .card img { width: 100%; aspect-ratio: 2/3; object-fit: cover; display: block; }
 
-        .card-content { padding: 10px; }
+        .info { padding: 10px; text-align: center; }
+        .title { font-size: 13px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 8px; }
 
-        .title {
-            font-size: 14px;
-            font-weight: 500;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+        /* Request Button - Pill style from your screenshot */
+        .request-btn {
+            display: block; background: var(--jelly-pill); color: #101625;
+            padding: 10px; border-radius: 25px; text-decoration: none;
+            font-weight: 700; font-size: 11px; text-transform: uppercase;
+            transition: background 0.2s;
         }
-
-        /* The Request Button - Styled like your "Play" button */
-        .btn {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--accent);
-            color: var(--accent-text);
-            padding: 8px;
-            border-radius: 20px;
-            text-decoration: none;
-            font-weight: bold;
-            font-size: 13px;
-            margin-top: 8px;
-        }
+        .request-btn:active { background: #ffffff; }
     </style>
 </head>
 <body>
-    <div class="header-search">
-        <input type="text" id="search" placeholder="Search for media..." autocomplete="off">
-    </div>
-    <div id="results" class="grid"></div>
+    <header><input type="text" id="s" placeholder="Search movies or series..." oninput="search()"></header>
+    <div class="grid" id="g"></div>
 
     <script>
-        const API_KEY = '63609170f4ab20e86842abce07c61ad6';
-        const FORM_LINK = 'https://forms.gle/1XULurfHDPjeLdZ89';
+        const API = '63609170f4ab20e86842abce07c61ad6';
+        const FORM = 'https://forms.gle/1XULurfHDPjeLdZ89';
 
-        async function fetchTrending() {
-            const res = await fetch(`https://api.themoviedb.org/3/trending/all/week?api_key=${API_KEY}`);
-            const data = await res.json();
-            render(data.results);
-        }
-
-        async function search(q) {
-            const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&query=${q}`);
-            const data = await res.json();
-            render(data.results);
-        }
-
-        function render(items) {
-            const container = document.getElementById('results');
-            container.innerHTML = items.map(item => {
-                if(item.media_type === 'person') return '';
+        async function search() {
+            const q = document.getElementById('s').value;
+            const url = q ? `https://api.themoviedb.org/3/search/multi?api_key=${API}&query=${q}` 
+                          : `https://api.themoviedb.org/3/trending/all/week?api_key=${API}`;
+            const r = await fetch(url);
+            const d = await r.json();
+            document.getElementById('g').innerHTML = d.results.map(i => {
+                if(i.media_type==='person' || !i.poster_path) return '';
+                const t = i.title || i.name;
+                const type = i.media_type === 'tv' ? 'Series' : 'Movie';
                 return `
-                    <div class="card">
-                        <img src="https://image.tmdb.org/t/p/w300${item.poster_path}" onerror="this.src='https://via.placeholder.com/300x450'">
-                        <div class="card-content">
-                            <div class="title">${item.title || item.name}</div>
-                            <a href="${FORM_LINK}" target="_blank" class="btn" onclick="copy('${item.title || item.name}')">Request</a>
-                        </div>
+                <div class="card">
+                    <div class="badge">${type}</div>
+                    <img src="https://image.tmdb.org/t/p/w300${i.poster_path}">
+                    <div class="info">
+                        <div class="title">${t}</div>
+                        <a href="${FORM}" target="_blank" class="request-btn" onclick="copy('${t}')">Request</a>
                     </div>
-                `;
+                </div>`;
             }).join('');
         }
-
         function copy(t) { navigator.clipboard.writeText("Request: " + t); }
-
-        document.getElementById('search').addEventListener('input', (e) => {
-            if(e.target.value) search(e.target.value); else fetchTrending();
-        });
-
-        window.onload = fetchTrending;
+        window.onload = search;
     </script>
 </body>
 </html>
