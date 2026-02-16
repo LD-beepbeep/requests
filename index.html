@@ -3,128 +3,164 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Media Requests</title>
+    <title>Jellyfin Requests</title>
     <style>
+        /* --- ELEGANTFIN THEME --- */
         :root {
-            --bg: #050505;
+            --bg: #000b14;
+            --card-bg: #101010;
             --accent: #00A4DC;
-            --card-bg: rgba(255, 255, 255, 0.05);
-            --glass: rgba(15, 15, 15, 0.8);
-            --text: #efefef;
-            --text-dim: #b0b0b0;
+            --text-main: #ffffff;
+            --text-sub: #a0a0a0;
         }
 
         body {
-            margin: 0; background: var(--bg); color: var(--text);
-            font-family: 'Inter', sans-serif;
-            background-image: radial-gradient(circle at 50% -20%, #1a2a3a 0%, transparent 50%);
-            min-height: 100vh;
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg);
+            background-image: radial-gradient(circle at 50% 0, #1a2a3a, transparent 70%);
+            color: var(--text-main);
+            margin: 0;
+            padding: 20px;
+            /* overflow-y: scroll; Always show scrollbar to prevent layout shift */
         }
 
-        header {
+        /* Search Bar */
+        .search-container {
             position: sticky; top: 0; z-index: 100;
-            background: var(--glass); backdrop-filter: blur(20px);
-            padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1);
+            background: rgba(0, 11, 20, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 15px 0;
+            margin-bottom: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            text-align: center;
         }
 
-        .search-container { max-width: 800px; margin: 0 auto; }
         input {
-            width: 100%; padding: 14px; border-radius: 12px;
-            border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3);
+            width: 90%; max-width: 600px;
+            padding: 12px 20px;
+            border-radius: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.05);
             color: white; font-size: 16px; outline: none;
+            transition: 0.2s;
+        }
+        input:focus { border-color: var(--accent); background: rgba(255, 255, 255, 0.1); }
+
+        /* Grid Layout */
+        h2 { font-weight: 300; font-size: 1.1rem; color: var(--text-sub); margin-bottom: 15px; text-transform: uppercase; letter-spacing: 1px; }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 15px;
+            max-width: 1200px;
+            margin: 0 auto;
         }
 
-        main { max-width: 1200px; margin: 40px auto; padding: 0 20px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 24px; }
-
+        /* Movie Card */
         .card {
-            background: var(--card-bg); border-radius: 12px; overflow: hidden;
-            border: 1px solid rgba(255,255,255,0.05); transition: 0.3s;
+            background: var(--card-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.2s;
+            position: relative;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
-        .card:hover { transform: scale(1.04); border-color: var(--accent); }
-        .poster-wrapper { aspect-ratio: 2/3; background: #111; }
-        .card img { width: 100%; height: 100%; object-fit: cover; }
 
-        .card-info { padding: 12px; }
-        .card-title { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .card:hover { transform: translateY(-4px); border-color: var(--accent); }
 
-        .request-link {
-            display: block; background: var(--accent); color: white;
-            text-align: center; padding: 10px; margin-top: 10px;
-            border-radius: 6px; text-decoration: none; font-weight: bold; font-size: 13px;
+        .poster { width: 100%; aspect-ratio: 2/3; object-fit: cover; display: block; }
+
+        .info { padding: 10px; }
+        .title { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
+        .year { font-size: 11px; color: var(--text-sub); }
+
+        /* Request Button */
+        .btn {
+            display: block; width: 100%; padding: 8px 0; margin-top: 8px;
+            background: var(--accent); color: white; border: none; border-radius: 4px;
+            font-weight: bold; font-size: 12px; cursor: pointer; text-decoration: none; text-align: center;
         }
-        
-        .request-link:active { background: #ffffff; color: var(--accent); }
+        .btn:hover { background: #008ebf; }
+
     </style>
 </head>
 <body>
 
-    <header>
-        <div class="search-container">
-            <input type="text" id="search" placeholder="Search for movies or series..." onkeyup="handleSearch()">
-        </div>
-    </header>
+    <div class="search-container">
+        <input type="text" id="search" placeholder="Search movies & series..." autocomplete="off">
+    </div>
 
-    <main>
-        <h2 id="section-title" style="font-weight: 300; color: var(--text-dim);">Trending Now</h2>
-        <div id="results" class="grid"></div>
-    </main>
+    <h2 id="section-title">Trending Now</h2>
+    <div id="results" class="grid"></div>
 
     <script>
         const API_KEY = '63609170f4ab20e86842abce07c61ad6';
         const FORM_LINK = 'https://forms.gle/1XULurfHDPjeLdZ89';
 
-        window.onload = () => fetchTrending();
+        window.onload = fetchTrending;
+
+        const searchInput = document.getElementById('search');
+        let timeout = null;
+
+        searchInput.addEventListener('keyup', () => {
+            clearTimeout(timeout);
+            const query = searchInput.value;
+            if (query.length === 0) {
+                document.getElementById('section-title').innerText = "Trending Now";
+                fetchTrending();
+                return;
+            }
+            timeout = setTimeout(() => {
+                document.getElementById('section-title').innerText = "Search Results";
+                fetchMovies(query);
+            }, 500);
+        });
 
         async function fetchTrending() {
             const res = await fetch(`https://api.themoviedb.org/3/trending/all/week?api_key=${API_KEY}`);
             const data = await res.json();
-            renderResults(data.results);
+            displayResults(data.results);
         }
 
-        let searchTimeout;
-        function handleSearch() {
-            const query = document.getElementById('search').value;
-            clearTimeout(searchTimeout);
-            if (!query) { fetchTrending(); return; }
-            searchTimeout = setTimeout(async () => {
-                const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&query=${query}`);
-                const data = await res.json();
-                renderResults(data.results);
-            }, 500);
+        async function fetchMovies(query) {
+            const res = await fetch(`https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&query=${query}`);
+            const data = await res.json();
+            displayResults(data.results);
         }
 
-        function renderResults(items) {
-            const resultsDiv = document.getElementById('results');
-            resultsDiv.innerHTML = '';
-            items.forEach(item => {
-                if (item.media_type === 'person') return;
-                const title = item.title || item.name;
-                const date = item.release_date || item.first_air_date || '';
-                const year = date ? date.split('-')[0] : 'N/A';
-                const poster = item.poster_path ? `https://image.tmdb.org/t/p/w400${item.poster_path}` : 'https://via.placeholder.com/400x600?text=No+Poster';
+        function displayResults(movies) {
+            const container = document.getElementById('results');
+            container.innerHTML = '';
+            
+            movies.forEach(movie => {
+                if (movie.media_type === 'person') return;
                 
+                const title = movie.title || movie.name;
+                const date = movie.release_date || movie.first_air_date || '';
+                const year = date.split('-')[0] || 'N/A';
+                const poster = movie.poster_path ? `https://image.tmdb.org/t/p/w300${movie.poster_path}` : 'https://via.placeholder.com/300x450?text=No+Poster';
+                const id = movie.id;
+                const type = movie.media_type;
+
                 const card = document.createElement('div');
                 card.className = 'card';
                 card.innerHTML = `
-                    <div class="poster-wrapper"><img src="${poster}"></div>
-                    <div class="card-info">
-                        <div class="card-title">${title}</div>
-                        <div style="font-size:11px; color:gray;">${year} • ${item.media_type.toUpperCase()}</div>
-                        <a href="${FORM_LINK}" target="_blank" class="request-link" 
-                           onclick="copyData('${title}', '${year}', '${item.media_type}', '${item.id}')">
-                           COPY & REQUEST
-                        </a>
+                    <img class="poster" src="${poster}" loading="lazy">
+                    <div class="info">
+                        <div class="title">${title}</div>
+                        <div class="year">${year} • ${type.toUpperCase()}</div>
+                        <a href="${FORM_LINK}" target="_blank" class="btn" onclick="copyData('${title}', '${year}', '${id}')">REQUEST</a>
                     </div>
                 `;
-                resultsDiv.appendChild(card);
+                container.appendChild(card);
             });
         }
 
-        function copyData(title, year, type, id) {
-            const text = `Title: ${title} (${year})\nID: ${id}\nType: ${type}`;
+        function copyData(title, year, id) {
+            const text = `Request: ${title} (${year}) [ID: ${id}]`;
             navigator.clipboard.writeText(text);
-            alert("Copied movie details! Now just paste them into the form that opened.");
+            // No alert needed, it just opens the form and copies text.
         }
     </script>
 </body>
